@@ -1,0 +1,115 @@
+import java.util.*;
+
+public class ShuffleExperiment {
+
+    public static int[] slowShuffle(int N) {
+
+        Random rand = new Random();
+        int[] shuffled = new int[N];
+        boolean[] isNotPresent = new boolean[N + 1];
+
+        Arrays.fill(isNotPresent, true);
+
+        int i = 0;
+
+        while (i < N - 1) {
+            int r = rand.nextInt(N) + 1; // random in [1..N]
+
+            if (isNotPresent[r]) {
+                shuffled[i] = r;
+                isNotPresent[r] = false;
+                i++;
+            }
+        }
+
+        for (int j = 1; j <= N; j++) {
+            if (isNotPresent[j]) {
+                shuffled[N - 1] = j;
+                break;
+            }
+        }
+
+        return shuffled;
+    }
+
+    public static int[] biasedShuffle(int N) {
+
+        Random rand = new Random();
+        int[] shuffled = new int[N];
+
+        for (int i = 0; i < N; i++)
+            shuffled[i] = i + 1;
+
+        for (int i = 0; i < N; i++) {
+            int r = rand.nextInt(N);
+            int temp = shuffled[i];
+            shuffled[i] = shuffled[r];
+            shuffled[r] = temp;
+        }
+
+        return shuffled;
+    }
+    public static int[] unbiasedShuffle(int N) {
+
+        Random rand = new Random();
+        int[] shuffled = new int[N];
+
+        for (int i = 0; i < N; i++)
+            shuffled[i] = i + 1;
+
+        for (int i = 0; i < N; i++) {
+            int r = i + rand.nextInt(N - i);
+            int temp = shuffled[i];
+            shuffled[i] = shuffled[r];
+            shuffled[r] = temp;
+        }
+
+        return shuffled;
+    }
+
+    public static String arrayToKey(int[] arr) {
+        StringBuilder sb = new StringBuilder();
+        for (int num : arr)
+            sb.append(num);
+        return sb.toString();
+    }
+
+    public static void testDistribution() {
+
+        int N = 3;
+        int trials = 60000;
+
+        HashMap<String, Integer> biasedCount = new HashMap<>();
+        HashMap<String, Integer> unbiasedCount = new HashMap<>();
+
+        for (int i = 0; i < trials; i++) {
+
+            int[] b = biasedShuffle(N);
+            int[] u = unbiasedShuffle(N);
+
+            String keyB = arrayToKey(b);
+            String keyU = arrayToKey(u);
+
+            biasedCount.put(keyB, biasedCount.getOrDefault(keyB, 0) + 1);
+            unbiasedCount.put(keyU, unbiasedCount.getOrDefault(keyU, 0) + 1);
+        }
+
+        System.out.println("Biased Shuffle Results:");
+        for (String key : biasedCount.keySet())
+            System.out.println(key + " : " + biasedCount.get(key));
+
+        System.out.println("\nUnbiased Shuffle Results:");
+        for (String key : unbiasedCount.keySet())
+            System.out.println(key + " : " + unbiasedCount.get(key));
+    }
+
+    public static void main(String[] args) {
+
+        int[] example = slowShuffle(10);
+        System.out.println("Example slow shuffle:");
+        System.out.println(Arrays.toString(example));
+
+        System.out.println("\nDistribution Test (N = 3, 60000 trials)");
+        testDistribution();
+    }
+}
